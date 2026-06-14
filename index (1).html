@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Performance</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      color: white;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    form input {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      padding: 10px;
+      background: orange;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    table {
+      margin: 20px auto;
+      width: 90%;
+      border-collapse: collapse;
+      background: white;
+      color: black;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background: blue;
+      color: white;
+    }
+
+    .pass {
+      color: green;
+      font-weight: bold;
+    }
+
+    .fail {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>📊 Student Performance System</h1>
+
+<form id="form">
+  <input type="text" id="name" placeholder="Name" required>
+  <input type="number" id="maths" placeholder="Maths" required>
+  <input type="number" id="science" placeholder="Science" required>
+  <input type="number" id="english" placeholder="English" required>
+  <button type="submit">Add</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Maths</th>
+      <th>Science</th>
+      <th>English</th>
+      <th>Total</th>
+      <th>Average</th>
+      <th>Result</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="studentTable"></tbody>
+</table>
+
+<script>
+const api = "http://127.0.0.1:3001/students";
+
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const data = {
+    name: document.getElementById("name").value,
+    maths: Number(document.getElementById("maths").value),
+    science: Number(document.getElementById("science").value),
+    english: Number(document.getElementById("english").value),
+  };
+
+  await fetch(api, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  loadStudents();
+  e.target.reset();
+});
+
+async function loadStudents() {
+  const res = await fetch(api);
+  const students = await res.json();
+
+  const table = document.getElementById("studentTable");
+  table.innerHTML = "";
+
+  students.forEach((s) => {
+    table.innerHTML += `
+      <tr>
+        <td>${s.name}</td>
+        <td>${s.maths}</td>
+        <td>${s.science}</td>
+        <td>${s.english}</td>
+        <td>${s.total}</td>
+        <td>${s.average}</td>
+        <td class="${s.result === "Pass" ? "pass" : "fail"}">${s.result}</td>
+        <td><button onclick="deleteStudent(${s.id})">Delete</button></td>
+      </tr>
+    `;
+  });
+}
+
+async function deleteStudent(id) {
+  await fetch(`${api}/${id}`, { method: "DELETE" });
+  loadStudents();
+}
+
+loadStudents();
+</script>
+
+</body>
+</html>
